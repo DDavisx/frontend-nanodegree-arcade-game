@@ -13,6 +13,7 @@
  * the canvas' context (ctx) object globally available to make writing app.js
  * a little simpler to work with.
  */
+
 var Engine = (function(global) {
     /* Predefine the variables we'll be using within this scope,
      * create the canvas element, grab the 2D context for that canvas
@@ -80,8 +81,8 @@ var Engine = (function(global) {
      * on the entities themselves within your app.js file).
      */
     function update(dt) {
-        if (gameIsOver === false) {
-            updateEntities(dt);
+        if ( gameIsOver === false ) {
+          updateEntities(dt);
         }
     }
 
@@ -96,13 +97,10 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
             // here we check for collisions with the player
-            if ( enemy.collisionCheck(enemy.collisionRect, player.collisionRect) )
-            {
-                reset();
-            }
+            reset( enemy.collisionCheck( enemy.collisionRect , player.collisionRect ));
         });
         player.update();
-        if (player.y <= -35) {
+        if ( player.y <= -35) {
             gameOver();
         }
     }
@@ -119,13 +117,13 @@ var Engine = (function(global) {
          */
 
         var rowImages = [
-                'images/water-block.png', // Top row is water
-                'images/water-block.png', // Top row is water
-                'images/stone-block.png', // Row 1 of 3 of stone
-                'images/stone-block.png', // Row 2 of 3 of stone
-                'images/stone-block.png', // Row 3 of 3 of stone
-                'images/grass-block.png', // Row 1 of 2 of grass
-                'images/grass-block.png' // Row 2 of 2 of grass
+                'images/water-block.png',   // Top row is water
+                'images/water-block.png',   // Top row is water
+                'images/stone-block.png',   // Row 1 of 3 of stone
+                'images/stone-block.png',   // Row 2 of 3 of stone
+                'images/stone-block.png',   // Row 3 of 3 of stone
+                'images/grass-block.png',   // Row 1 of 2 of grass
+                'images/grass-block.png'    // Row 2 of 2 of grass
             ],
             numRows = 7,
             numCols = 5,
@@ -144,14 +142,14 @@ var Engine = (function(global) {
                  * so that we get the benefits of caching these images, since
                  * we're using them over and over.
                  */
-                ctx.drawImage(Resources.get(rowImages[row]), (col * 101), (row * 83) - 83);
+                ctx.drawImage(Resources.get(rowImages[row]), (col * 101) , (row * 83) -83);
             }
         }
 
         renderEntities();
 
         // If the game is Over render the Game Over Screen.
-        if (gameIsOver) {
+        if (gameIsOver ) {
             renderGameOverScreen();
             player.render()
             return;
@@ -173,26 +171,30 @@ var Engine = (function(global) {
         player.render();
     }
 
-    /* This will reset the player and enemies to the initial state
-    *  if the game has ended it will remove and destroy events listeners,
-    *  references to the game over screen, and set alpha and player values.
-    */
-    function reset() {
-        player.x = 200;
-        player.y = 380;
-        allEnemies.length = 0;
-        allEnemies.push(new ReverseEnemyBug(1), new EnemyBug(2), new EnemyBug(3));
-
-        if (gameIsOver) {
-            canvas.removeEventListener('click', replayHandler);
-            gameOverBGInstance = null;
-            GameOverMSGInstance = null;
-            GameOverReplayBtn = null;
-            ctx.globalAlpha = 1;
+    /* This function does nothing but it could have been a good place to
+     * handle game reset states - maybe a new game menu or a game over screen
+     * those sorts of things. It's only called once by the init() method.
+     */
+    function reset( isCollision ) {
+        if ( isCollision ) {
+            player.x = 200;
+            player.y = 380;
             player.disabled = false;
-            gameIsOver = false;
+            allEnemies.length = 0;
+            allEnemies.push( new ReverseEnemyBug(1), new EnemyBug(2), new EnemyBug(3));
+
+            if ( gameIsOver )  {
+                canvas.removeEventListener('click' , replayHandler);
+                gameOverBGInstance = null;
+                GameOverMSGInstance =  null;
+                GameOverReplayBtn = null;
+                ctx.globalAlpha = 1;
+                gameIsOver = false;
+            }
         }
     }
+
+
 
     /**
       A modified function for rounded rectangles. the original can be found here:
@@ -212,103 +214,89 @@ var Engine = (function(global) {
      * @param {string} textColor the color of the Rectangle.  Defaults to 'black'.
      * @param {string} displayText the text to be displayed.  Defaults to no text.
      */
-    var roundRect = function(ctx, x, y, width, height, radius, fill, stroke, fillcolor, textColor, displayText) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.radius = radius;
-        this.fill = fill;
-        this.stroke = stroke;
-        this.fillcolor = fillcolor;
-        this.textColor = textColor;
-        this.displayText = displayText;
+    var roundRect = function(ctx, x, y, width, height, radius, fill, stroke, fillcolor, textColor , displayText) {
+     this.x = x;
+     this.y = y;
+     this.width = width;
+     this.height = height;
+     this.radius = radius;
+     this.fill = fill;
+     this.stroke = stroke;
+     this.fillcolor = fillcolor;
+     this.textColor = textColor;
+     this.displayText = displayText;
 
-        if (typeof stroke == "undefined") {
-            this.stroke = true;
-        }
-        if (typeof radius === "undefined") {
-            this.radius = 5;
-        }
+     if (typeof stroke == "undefined" ) {
+       this.stroke = true;
+     }
+     if (typeof radius === "undefined") {
+       this.radius = 5;
+     }
 
-        if (typeof fillcolor == "undefined") {
-            this.fillcolor = "green";
-        }
-        if (typeof textColor === "undefined") {
-            this.textColor = "black";
-        }
+     if (typeof fillcolor == "undefined" ) {
+       this.fillcolor = "green";
+     }
+     if (typeof textColor === "undefined") {
+       this.textColor = "black";
+     }
 
-        this.draw = function() {
-            ctx.fillStyle = this.fillcolor;
-            ctx.beginPath();
-            ctx.moveTo(this.x + this.radius, this.y);
-            ctx.lineTo(this.x + this.width - this.radius, this.y);
-            ctx.quadraticCurveTo(this.x + this.width, this.y, this.x + this.width, this.y + this.radius);
-            ctx.lineTo(this.x + this.width, this.y + this.height - this.radius);
-            ctx.quadraticCurveTo(this.x + this.width, this.y + this.height, this.x + this.width - this.radius, this.y + this.height);
-            ctx.lineTo(this.x + this.radius, this.y + this.height);
-            ctx.quadraticCurveTo(this.x, this.y + this.height, this.x, this.y + this.height - this.radius);
-            ctx.lineTo(this.x, this.y + this.radius);
-            ctx.quadraticCurveTo(this.x, this.y, this.x + this.radius, this.y);
-            ctx.closePath();
-            if (this.stroke) {
-                ctx.stroke();
-            }
-            if (this.fill) {
-                ctx.fill();
-            }
+    this.draw = function () {
+           ctx.fillStyle = this.fillcolor ;
+          ctx.beginPath();
+          ctx.moveTo( this.x + this.radius, this.y);
+          ctx.lineTo(this.x + this.width - this.radius, this.y);
+          ctx.quadraticCurveTo(this.x + this.width, this.y, this.x + this.width, this.y + this.radius);
+          ctx.lineTo(this.x + this.width, this.y + this.height - this.radius);
+          ctx.quadraticCurveTo(this.x + this.width, this.y + this.height, this.x + this.width - this.radius, this.y + this.height);
+          ctx.lineTo(this.x + this.radius, this.y + this.height);
+          ctx.quadraticCurveTo(this.x, this.y + this.height, this.x, this.y + this.height - this.radius);
+          ctx.lineTo(this.x, this.y + this.radius);
+          ctx.quadraticCurveTo(this.x, this.y, this.x + this.radius, this.y);
+          ctx.closePath();
+          if (this.stroke) {
+            ctx.stroke();
+          }
+          if (this.fill) {
+            ctx.fill();
+          }
 
-            // add text to rectangle
-            if (displayText) {
-                ctx.font = "24px Arial";
-                ctx.fillStyle = this.textColor;
-                ctx.fillText(displayText, this.x + (this.width / 2), this.y + (this.height / 2) + 8);
-            }
-        };
-    };
-
-    /**
-      Draws two Lines of Text on to the canvas to congratulate the Player.
-     * @param {string} font  the font size and Family. Defaults to "52px Comic Sans MS"
-     * @param {string} color the color of the Text. Defaults to 'black'.
-     **/
-    var gameOverMessage = function(font, color) {
+          // add text to rectangle
+          if ( displayText ) {
+              ctx.font = "24px Arial";
+              ctx.fillStyle = this.textColor;
+              ctx.fillText( displayText, this.x + (this.width / 2), this.y + (this.height / 2) + 8);
+          }
+      };
+  };
+    var gameOverMessage = function( font , color ) {
         this.font = font;
         this.color = color;
-        if (typeof this.font == "undefined") {
-            this.font = "52px Comic Sans MS";
+        if (typeof this.font == "undefined" ) {
+          this.font = "52px Comic Sans MS";
         }
         if (typeof this.color === "undefined") {
-            this.color = "black";
+          this.color = "black";
         }
-        this.draw = function() {
-            ctx.font = this.font;
-            ctx.fillStyle = this.color;
-            ctx.textAlign = "center";
-            ctx.fillText("Congratulations!", canvas.width / 2, 200);
-            ctx.fillText("You Won!", canvas.width / 2, 280);
-        };
+          this.draw = function () {
+              ctx.font = this.font ;
+              ctx.fillStyle = this.color;
+              ctx.textAlign = "center";
+              ctx.fillText("Congratulations!", canvas.width/2, 200);
+              ctx.fillText("You Won!", canvas.width/2, 280 );
+          };
     };
 
-    /**
-      Draws a rectangle over top of the canvas.
-     * @param {string} color the color of the background. Defaults to 'white'.
-     **/
     var gameoverBackground = function(color) {
-        if (typeof color === "undefined") {
-            this.color = "white";
+        if ( typeof color === "undefined" ) {
+          this.color = "white";
         }
-        this.draw = function() {
+        this.draw = function () {
             ctx.fillStyle = this.color;
             ctx.globalAlpha = 0.8;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
         };
     };
 
-    /**
-     *  This functon calls the Draw function on each part
-     *  of the Game Over screen.
-     **/
     var renderGameOverScreen = function() {
         gameOverBGInstance.draw();
         GameOverMSGInstance.draw();
@@ -316,34 +304,31 @@ var Engine = (function(global) {
     };
 
     // determine the Coordinates of the mouse relative to canvas
-    // this seems to be the best way to determine XY coordinates cross-browser.
-    function mouseXY(e) {
-        var rect = canvas.getBoundingClientRect();
-        return {
-            clientX: (e.clientX - rect.left),
-            clientY: (e.clientY - rect.top)
-        };
+     function mouseXY( e )
+     {
+      var rect = canvas.getBoundingClientRect();
+      return { clientX:(e.clientX-rect.left), clientY:(e.clientY-rect.top) };
     }
 
     // a click handler that is attached to canvas on Gameover.
     var replayHandler = function(event) {
         var evt = mouseXY(event);
-        console.log('mouseclik im Edgey x:' + evt.clientX + " >= " + GameOverReplayBtn.x);
-        if (evt.clientX >= GameOverReplayBtn.x && evt.clientX <= GameOverReplayBtn.x + GameOverReplayBtn.width && evt.clientY >= GameOverReplayBtn.y && evt.clientY <= GameOverReplayBtn.y + GameOverReplayBtn.height) {
-            reset();
+        console.log('mouseclik im Edgey x:' +  evt.clientX + " >= " +  GameOverReplayBtn.x);
+        if(evt.clientX >= GameOverReplayBtn.x && evt.clientX<=GameOverReplayBtn.x+GameOverReplayBtn.width && evt.clientY>=GameOverReplayBtn.y && evt.clientY<=GameOverReplayBtn.y+GameOverReplayBtn.height){
+           reset(true);
         }
     };
 
     /* the player has achieved the Goal and the game has ended
      * Set the GameOver flag,  disable the player and create the
      * Game over screen elements before Rendering.
-     */
+    */
     function gameOver() {
         gameIsOver = true;
         player.disabled = true;
         gameOverBGInstance = new gameoverBackground();
-        GameOverMSGInstance = new gameOverMessage();
-        GameOverReplayBtn = new roundRect(ctx, (canvas.width / 2) - ((canvas.width / 3) / 2), 350, canvas.width / 3, 50, 20, true, false, 'green', 'black', "play again!");
+        GameOverMSGInstance =  new gameOverMessage();
+        GameOverReplayBtn = new roundRect(ctx, (canvas.width/2) - ((canvas.width/3)/2)  , 350, canvas.width/3, 50, 20, true, false, 'green', 'black', "play again!" );
         canvas.addEventListener('click', replayHandler);
         renderGameOverScreen();
     }
